@@ -1,7 +1,8 @@
 # Plugin QGIS - Inspecteur Will
 
 ## Vue d'ensemble
-iWill est un plugin QGIS conçu pour faciliter le chargement et l'inspection des fichiers shapefile. Il offre une interface conviviale pour sélectionner des répertoires, filtrer des fichiers et charger des couches sélectionnées dans l'environnement QGIS.
+iWill est un plugin QGIS conçu pour faciliter la rechercher et le chargement des fichiers "shapefile" etc. 
+Il offre une interface conviviale pour sélectionner des répertoires, filtrer des fichiers et charger les couches sélectionnées dans l'environnement QGIS.
 
 ## Fonctionnalités
 - Sélectionner un répertoire pour parcourir les fichiers shapefile.

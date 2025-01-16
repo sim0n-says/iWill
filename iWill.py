@@ -1,22 +1,23 @@
-from PyQt5.QtWidgets import (
-    QAction, QFileDialog, QVBoxLayout, QPushButton, QTreeWidget, 
-    QTreeWidgetItem, QDialog, QCheckBox, QProgressBar, QHBoxLayout, QLineEdit
-)
-from PyQt5.QtCore import Qt, QCoreApplication
-from qgis.core import QgsProject, QgsVectorLayer, QgsWkbTypes
-from qgis.gui import QgsMessageBar
-from datetime import datetime
 import os
 import re
+from PyQt5.QtWidgets import (
+    QFileDialog, QVBoxLayout, QPushButton, QTreeWidget, QTreeWidgetItem, QCheckBox, QProgressBar, QLineEdit, QDockWidget, QWidget
+)
+from PyQt5.QtCore import Qt
+from datetime import datetime
+from qgis.core import QgsProject, QgsVectorLayer, QgsWkbTypes
 
-class ShapefileLoader(QDialog):
+class ShapefileLoader(QDockWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Inspecteur Will")
-        self.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint)
+        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.setFeatures(QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         
+        self.widget = QWidget()
         self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.widget.setLayout(self.layout)
+        self.setWidget(self.widget)
         
         self.init_ui()
         
@@ -42,6 +43,8 @@ class ShapefileLoader(QDialog):
         self.file_list.setHeaderLabels(["Nom du fichier", "Date de modification", "Répertoire", "Type de géométrie", "Extension"])
         self.file_list.setSortingEnabled(True)  # Activer le tri
         self.file_list.sortItems(1, Qt.AscendingOrder)  # Trier par date par défaut
+        self.file_list.setSelectionMode(QTreeWidget.MultiSelection)  # Permettre la sélection multiple
+        self.file_list.itemSelectionChanged.connect(self.update_checkboxes)  # Connecter l'événement de changement de sélection
         self.layout.addWidget(self.file_list)
         
         # Bouton pour charger les couches sélectionnées
@@ -138,11 +141,20 @@ class ShapefileLoader(QDialog):
             if re.search(search_text, file_info["file"].lower()):
                 self.add_file_item(file_info)
     
+    def update_checkboxes(self):
+        # Mettre à jour les cases à cocher en fonction de la sélection multiple
+        for i in range(self.file_list.topLevelItemCount()):
+            item = self.file_list.topLevelItem(i)
+            if item.isSelected():
+                item.setCheckState(0, Qt.Checked)
+            else:
+                item.setCheckState(0, Qt.Unchecked)
+    
     def load_selected_layers(self):
         # Charger les couches sélectionnées dans QGIS
         for i in range(self.file_list.topLevelItemCount()):
             item = self.file_list.topLevelItem(i)
-            if item.checkState(0) == 2:  # Vérifie si la case est cochée
+            if item.checkState(0) == Qt.Checked:  # Vérifie si la case est cochée
                 file_path = item.data(0, 1)
                 layer = QgsVectorLayer(file_path, os.path.basename(file_path), "ogr")
                 if not layer.isValid():
@@ -150,20 +162,17 @@ class ShapefileLoader(QDialog):
                 else:
                     QgsProject.instance().addMapLayer(layer)
 
-class iWill:
-    def __init__(self, iface):
-        self.iface = iface
-        self.action = None
+# Pour ouvrir la fenêtre de l'outil de manière non modale
+def open_shapefile_loader():
+    loader = ShapefileLoader()
+    loader.setWindowModality(Qt.NonModal)  # fenêtre est non modale
+    loader.show()
 
-    def initGui(self):
-        self.action = QAction(QCoreApplication.translate("iWill", "Inspecteur Will"), self.iface.mainWindow())
-        self.action.setIcon(QIcon(":/plugins/iWill/icon.png"))
-        self.action.triggered.connect(self.run)
-        self.iface.addToolBarIcon(self.action)
+def initGui(self):
+    self.dock_widget = ShapefileLoader()
+    self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock_widget)
 
-    def unload(self):
-        self.iface.removeToolBarIcon(self.action)
+def unload(self):
+    self.iface.removeDockWidget(self.dock_widget)
 
-    def run(self):
-        self.dialog = ShapefileLoader()
-        self.dialog.exec_()
+open_shapefile_loader()

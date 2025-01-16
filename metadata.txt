@@ -1,0 +1,12 @@
+[general]
+name: Inspecteur Will
+description: Un plugin QGIS pour rechercher et inspecter des fichiers shapefile.
+version: 1.0
+qgisMinimumVersion: 3.0
+author: Simon Bédard
+email: simon@servicesforestiers.tech
+category: Vector
+icon: icon.png
+homepage: https://github.com/sim0n-says
+repository: https://github.com/sim0n-says/iWill
+about: Ce plugin permet aux utilisateurs de charger des fichiers shapefile et d'inspecter leurs propriétés dans QGIS. Il offre une interface conviviale pour sélectionner des répertoires, filtrer des fichiers et charger les couches sélectionnées.
